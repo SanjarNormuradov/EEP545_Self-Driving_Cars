@@ -1,0 +1,165 @@
+<launch>
+
+    <include file="$(find project)/launch/MapServer.launch"/>
+    
+    <arg name="plan_filename" default="$(find project)/csv_files/plan_file1.csv" />
+
+	<!--************* PID Controller ************** 
+        plan_lookahead: If the robot is currently closest to the i-th pose in the plan,
+        				then it should navigate towards the (i+plan_lookahead)-th pose in the plan
+        Kp: The proportional PID parameter
+    	Ki: The integral PID parameter
+    	Kd: The derivative PID parameter
+        translation_weight: How much the error in translation should be weighted in relation
+                        	to the error in rotation
+		rotation_weight: How much the error in rotation should be weighted in relation
+                     	 to the error in translation
+        error_buff_length: The length of the buffer that is storing past error values
+    	speed: The speed at which the robot should travel -->
+    <arg name="plan_lookahead" default="7" />
+	<arg name="Kp" default="1.0" />
+	<arg name="Ki" default="0.4" />
+	<arg name="Kd" default="0.0" />
+	<arg name="translation_weight" default="1.0" />
+	<arg name="rotation_weight" default="0.0" />
+	<arg name="error_buff_length" default="10" />
+	<arg name="speed" default="1.0" />
+
+	<!--************* MPC Controller ************** 
+        traj_num: The number of different trajectories
+		    Simulation (with/without physical dimensions): 3 / 7
+		    Real Car (with/without physical dimensions):  3 / 9
+        dt: The amount of time to apply a control command
+		    Simulation (with/without physical dimensions): 0.03 / 0.01
+		    Real Car (with/without physical dimensions):  0.11 / 0.03
+        T: The number of time steps to rollout
+		    Simulation (with/without physical dimensions): 100 / 370
+		    Real Car (with/without physical dimensions):  100 / 270
+        min_speed | max_speed: The speed at which the robot should travel. More straight line trajectory is, more speed -->
+    <arg name="traj_nums" default="5" />
+	<arg name="dt" default="0.10" />
+	<arg name="T" default="100" />
+	<arg name="max_speed" default="1.0" />
+	<arg name="min_speed" default="0.2" />
+
+    <!--********** Sensor Model *************
+        laser_ray_step: Step for downsampling laser scans. 
+		    Ideally: 720 ray samples / 20 = 360 downsamples. 360 degrees / 36 downsamples = 10 degree step
+		    Reality: Number of laser scan samples could be any less than 720
+        Z_HIT: The weight of Gaussian distribution to account 'Measurement Noise'
+        Z_RAND: The weight of Uniform distribution to account 'Unexplainable Measurements' such as cross-talk between different sensors or phantom readings bouncing off walls (sonars)
+        Z_MAX: The weight of Point-mass distribution to account 'Max-range Measurments' such as specular (mirror) reflections (sonars) and black, light-absorbing, objects or measuring in bright-sunlight (lasers)
+        Z_SHORT: The weight of Exponential Distribution to account 'Unexpected Objects' such as people not contained in the static map
+        SIGMA_HIT: The noise value for HIT reading
+        LAMBDA_SHORT: The inherent parameter of SHORT reading
+         -->
+    <arg name="laser_ray_step" default="20" />
+	<arg name="max_range_meters" default="13.0" />
+    <arg name="Z_HIT" default="0.90" />
+    <arg name="Z_RAND" default="0.01" />
+    <arg name="Z_MAX" default="0.04" />
+    <arg name="Z_SHORT" default="0.05" />
+    <arg name="SIGMA_HIT" default="10.5" />
+    <arg name="LAMBDA_SHORT" default="0.001" />
+    <!--********** ReSampler *************
+        n_particles: The number of particles
+		resample_type: Whether to use naiive or low_variance sampling -->     
+    <arg name="n_particles" default="1000" />
+    <arg name="resample_type" default="low_variance" />
+
+    <!--*********** A* Planner **************
+        halton_points: The number of points (pseudo-)randomly picked from the map, aka the number of graph nodes
+		disc_radius: The disc radius surrounding current node. All nodes except the current within this circle are considered neighbors -->
+    <arg name="halton_points" default="1250" />
+    <arg name="disc_radius" default="3" />
+
+
+	<node pkg="project" type="WinnerCar.py" name="winner_car" output="screen">
+
+                <!--*************************** CSV Files *************************** -->
+                <param name="plan_filename" type="string" value="$(arg plan_filename)" />
+                <param name="badwaypoints_filename" type="string" value="$(find project)/csv_files/bad_waypoints.csv" />
+                <param name="goodwaypoints_filename" type="string" value="$(find project)/csv_files/good_waypoints.csv" />
+                <param name="startpoint_filename" type="string" value="$(find project)/csv_files/start.csv" />
+
+            	<!--********************* A* Planner *************************
+                    static_map: Map service name to get the map of environment 
+                    source_topic: The topic containing starting point of car's trajectory
+                    target_topic: The topic containing ending point of car's trajectory
+                    plan_topic: The topic containing generated plan from starting to ending points as PoseArray msg
+                    service_topic: The topic to get request (source and target points)
+                    collision_delta: The denominator in discretization of graph edges -->
+                <param name="static_map" type="string" value="static_map" />
+                <param name="source_topic" type="string" value="/initialpose" />
+                <param name="target_topic" type="string" value="/move_base_simple/goal" />
+                <param name="plan_topic" type="string" value="/winner_car/car_plan" />
+                <param name="service_topic" type="string" value="/winner_car/get_car_plan" />
+                <param name="collision_delta" type="double" value="0.15" />
+                <param name="waypoint_topic" type="string" value="/waypoint" />
+
+                <param name="halton_points" type="int" value="$(arg halton_points)" />
+                <param name="disc_radius" type="int" value="$(arg disc_radius)" />   
+
+                <!--************************ Motion Model ************************* 
+                    motor_state_topic: The topic containing motor state information. 
+                        Set /car/vesc/sensors/core if the code is tested in the real car
+		            servo_state_topic: The topic containing servo state information -->
+                <param name="motor_state_topic" type="string" value="/car/vesc/sensors/core" />
+	            <param name="servo_state_topic" type="string" value="/car/vesc/sensors/servo_position_command" />
+
+                <!--************************ Sensor Model ************************* 
+                    scan_topic: The topic containing laser scans
+                    pose_topic: The topic containing pose estimated by particle filter /car/car_pose
+		            exclude_max_range_rays: Whether to exclude rays that are beyond the max range -->
+                <param name="scan_topic" type="string" value="/car/scan" />
+                <param name="pose_topic" type="string" value="/pf/viz/inferred_pose" />
+
+                <param name="laser_ray_step" type="int" value="$(arg laser_ray_step)" />
+                <param name="max_range_meters" type="double" value="$(arg max_range_meters)" />
+                <param name="Z_HIT" type="double" value="$(arg Z_HIT)" />
+                <param name="Z_RAND" type="double" value="$(arg Z_RAND)" />
+                <param name="Z_MAX" type="double" value="$(arg Z_MAX)" />
+                <param name="Z_SHORT" type="double" value="$(arg Z_SHORT)" />
+                <param name="SIGMA_HIT" type="double" value="$(arg SIGMA_HIT)" />
+                <param name="LAMBDA_SHORT" type="double" value="$(arg LAMBDA_SHORT)" />
+
+                <!--*********************** ReSampler *********************** -->
+		        <param name="resample_type" type="string" value="$(arg resample_type)" />
+
+                <!--*********************** Particle Filter *********************** 
+                    n_viz_particles: The number of particles to visualize
+		            motion_model:   
+                    odometry_topic:  -->
+                <param name="n_viz_particles" type="int" value="20" />
+		        <param name="motion_model" type="string" value="kinematic" />
+		        <param name="odometry_topic" type="string" value="/car/vesc/odom" />
+
+                <param name="n_particles" type="int" value="$(arg n_particles)" />
+
+                <!--*********************** PID Controller *********************** -->
+                <param name="plan_lookahead" type="int" value="$(arg plan_lookahead)" />
+                <param name="translation_weight" type="double" value="$(arg translation_weight)" />
+                <param name="rotation_weight" type="double" value="$(arg rotation_weight)" />
+                <param name="Kp" type="double" value="$(arg Kp)" />
+                <param name="Ki" type="double" value="$(arg Ki)" />
+                <param name="Kd" type="double" value="$(arg Kd)" />
+                <param name="error_buff_length" type="int" value="$(arg error_buff_length)" />
+                <param name="speed" type="double" value="$(arg speed)" />
+
+                <!--*********************** MPC Controller ***********************
+                    compute_time: The amount of time (in seconds) we can spend computing the cost
+                    min_delta: The minimum allowed steering angle (radians)
+    	            max_delta: The maximum allowed steering angle (radians)
+                     -->
+                <param name="compute_time" type="double" value="0.09" />
+                <param name="min_delta" type="double" value="-0.34" />
+                <param name="max_delta" type="double" value="0.341" />
+                <param name="traj_nums" type="double" value="$(arg traj_nums)" />
+                <param name="dt" type="double" value="$(arg dt)" />
+                <param name="T" type="int" value="$(arg T)" />
+                <param name="max_speed" type="double" value="$(arg max_speed)" />
+                <param name="min_speed" type="double" value="$(arg min_speed)" />
+
+	</node>
+
+</launch>

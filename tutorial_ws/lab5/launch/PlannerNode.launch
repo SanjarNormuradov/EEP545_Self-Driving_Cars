@@ -1,0 +1,22 @@
+<launch>
+
+	<!-- static_map: Map service name to get the map of environment
+         halton_points: The number of points (pseudo-)randomly picked from the map, aka the number of graph nodes
+		 disc_radius: The disc radius surrounding current node. All nodes except the current within this circle are considered neighbors  
+		 collision_delta: The denominator in discretization of graph edges
+		 source_topic: The topic containing starting point of car's trajectory
+		 target_topic: The topic containing ending point of car's trajectory
+         pub_topic: The topic to publish generated path from starting to ending points
+		 service_topic: The topic to get request (source and target points)  -->
+	<node pkg="lab5" type="PlannerNode.py" name="PlannerNode" output="screen">
+                <param name="static_map" type="string" value="static_map" />
+                <param name="halton_points" type="int" value="1250" />
+                <param name="disc_radius" type="int" value="6" />
+                <param name="collision_delta" type="double" value="0.15" />
+                <param name="source_topic" type="string" value="/initialpose" />
+                <param name="target_topic" type="string" value="/move_base_simple/goal" />
+                <param name="pub_topic" type="string" value="planner_node/car_plan" />
+                <param name="service_topic" type="string" value="planner_node/get_car_plan" />
+	</node>
+
+</launch>

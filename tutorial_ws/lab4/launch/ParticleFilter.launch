@@ -1,0 +1,44 @@
+<launch>
+
+	<!-- n_particles: The number of particles
+         n_viz_particles: The number of particles to visualize
+		 motion_model: Step for downsampling laser scans, 720 ray samples / 10 = 72 downsamples. 360 degrees / 72 downsamples = 5 degree step 
+		 odometry_topic: Whether to exclude rays that are beyond the max range
+		 motor_state_topic: The topic containing motor state information
+		 servo_state_topic: The topic containing servo state information
+         scan_topic: The topic containing laser scans
+		 laser_ray_step: Step for downsampling laser scans. 
+		 				 Ideally: 720 ray samples / 20 = 360 downsamples. 360 degrees / 36 downsamples = 10 degree step
+		 				 Reality: Number of laser scan samples could be any less than 720 
+		 exclude_max_range_rays: Whether to exclude rays that are beyond the max range
+		 max_range_meters: The max range of the laser. /home/robot/catkin_ws/src/mushr_sim/config/sensors.yaml file default = 10.0. TAs default = 5.6
+		 resample_type: Whether to use naiive or low_variance sampling -->
+	<arg name="n_particles" default="2000"/>
+	<arg name="n_viz_particles" default="20"/>
+	<arg name="motion_model" default="kinematic"/>
+	<arg name="odometry_topic" default="/car/vesc/odom"/>
+	<arg name="motor_state_topic" default="/car/vesc/sensors/core"/>
+	<arg name="servo_state_topic" default="/car/vesc/sensors/servo_position_command"/>
+	<arg name="scan_topic" default="/car/scan"/>
+	<arg name="laser_ray_step" default="20"/> 
+	<arg name="exclude_max_range_rays" default="True"/>
+	<arg name="max_range_meters" default="13.0"/>
+	<arg name="resample_type" default="low_variance"/>
+	
+	<node pkg="lab4" type="ParticleFilter.py" name="particle_filter" output="screen">
+
+		<param name="n_particles" type="int" value="$(arg n_particles)"/>
+		<param name="n_viz_particles" type="int" value="$(arg n_viz_particles)"/>
+		<param name="motion_model" type="string" value="$(arg motion_model)"/>
+		<param name="odometry_topic" type="string" value="$(arg odometry_topic)"/>
+		<param name="motor_state_topic" type="string" value="$(arg motor_state_topic)"/>
+		<param name="servo_state_topic" type="string" value="$(arg servo_state_topic)"/>
+		<param name="scan_topic" type="string" value="$(arg scan_topic)"/>
+		<param name="laser_ray_step" type="int" value="$(arg laser_ray_step)"/>
+    	<param name="exclude_max_range_rays" type="bool" value="$(arg exclude_max_range_rays)"/>
+		<param name="max_range_meters" type="double" value="$(arg max_range_meters)"/>
+    	<param name="resample_type" type="string" value="$(arg resample_type)"/>
+
+	</node>
+
+</launch>

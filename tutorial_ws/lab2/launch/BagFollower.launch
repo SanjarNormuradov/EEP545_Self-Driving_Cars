@@ -1,0 +1,11 @@
+<launch>
+
+	<param name="follow_backwards" value="True"/>
+	<!-- Choose between /lab2_sim.bag or /lab2_car.bag for simulation or real car respectively -->
+	<param name="bag_file_path" value="/home/robot/tutorial_ws/src/lab2/bagfiles/lab2_sim.bag"/>
+	<!-- <param name="bag_file_path" value="/home/robot/catkin_ws/src/lab2/bagfiles/lab2_car.bag"/> -->
+	<!-- <param name="bag_file_path" value="/home/robot/catkin_ws/src/lab2/bagfiles/lab2_basement.bag"/> -->
+	
+	<node pkg="lab2" type="BagFollower.py" name="BagFollower" required="true" output="screen"/>
+
+</launch>

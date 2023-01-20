@@ -1,0 +1,6 @@
+Instructions on how to get the rest of the bagfiles:
+Bagfiles "../lab2_car" and "../lab2_basement" are in the 31st car computer "/home/robot/catkin_ws/src/lab2/bagfiles"
+
+Answers:
+a. No, it isn't. The publishing rate of the joystick goes from 20 Hz up to 30/40/60 Hz depending on the status of the battery powering motors. Also how difficult trajectory is affects the amount of increase in the publishing rate. If battery is full and trajectory is let's say figure 8, then the rate goes up to 60 Hz. If batter isn't full and trajectory is mostly straight lines, then the rate goes up to 30/40 Hz.
+b. We do not have the map for VM simulations in ECE basement. But the outcome could be extrapolated from figure 8 trajectory. In VM simulation the constant rate of 10 Hz gives nearly the same figure 8 as it is recorded. In reality the rate jumps from 20 Hz up to 40 Hz firstly and then increases moderately up to 60 Hz.  

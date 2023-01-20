@@ -1,0 +1,46 @@
+<launch>
+	<!-- Parameters could not to be defined at runtime from command line, they are defined in the launch file -->
+	<!-- plan_topic: The topic that provides the plan of the robot as a PoseArray msg
+		 pose_topic: The topic that provides the current pose of the robot as a PoseStamped msg -->
+	<param name="plan_topic" value="/planner_node/car_plan" />
+	<param name="pose_topic" value="/car/car_pose" />
+
+
+	<!-- Arguments needs to be defined at runtime from command line, otherwise default values are passed -->	
+	<!-- plan_lookahead: If the robot is currently closest to the i-th pose in the plan,
+        				then it should navigate towards the (i+plan_lookahead)-th pose in the plan -->
+	<arg name="plan_lookahead" default="7" />
+
+	<!-- translation_weight: How much the error in translation should be weighted in relation
+                        	to the error in rotation
+		 rotation_weight: How much the error in rotation should be weighted in relation
+                     	to the error in translation -->
+	<arg name="translation_weight" default="1.0" />
+	<arg name="rotation_weight" default="0.2" />
+
+ 	<!-- Kp: The proportional PID parameter
+    	 Ki: The integral PID parameter
+    	 Kd: The derivative PID parameter --> 
+	<arg name="Kp" default="1.0" />
+	<arg name="Ki" default="0.1" />
+	<arg name="Kd" default="0.0" />
+
+ 	<!-- error_buff_length: The length of the buffer that is storing past error values
+    	 speed: The speed at which the robot should travel --> 
+	<arg name="error_buff_length" default="10" />
+	<arg name="speed" default="1.0" />
+   
+
+	<!--  --> 
+  	<node pkg="lab3" type="LineFollower.py" name="LineFollower" required="true" output="screen" >
+		<param name="plan_lookahead" value="$(arg plan_lookahead)" />
+		<param name="translation_weight" value="$(arg translation_weight)" />
+		<param name="rotation_weight" value="$(arg rotation_weight)" />
+		<param name="Kp" value="$(arg Kp)" />
+		<param name="Ki" value="$(arg Ki)" />
+		<param name="Kd" value="$(arg Kd)" />
+		<param name="error_buff_length" value="$(arg error_buff_length)" />
+		<param name="speed" value="$(arg speed)" />
+	</node>
+
+</launch>

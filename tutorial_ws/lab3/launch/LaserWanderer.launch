@@ -1,0 +1,43 @@
+<launch>
+    <!-- Parameters could not to be defined at runtime from command line, they are defined in the launch file -->
+	<!-- Arguments needs to be defined at runtime from command line, otherwise default values are passed -->	
+
+	<!-- compute_time: The amount of time (in seconds) we can spend computing the cost 
+         speed: The speed at which the robot should travel -->
+	<param name="compute_time" value="0.09" />
+    <param name="speed" value="1.0" />
+
+	<!-- dt: The amount of time to apply a control command
+		 Simulation (with/without physical dimensions): 0.03 / 0.01
+		 Real Car (with/without physical dimensions):  0.11 / 0.03
+
+		 T: The number of time steps to rollout
+		 Simulation (with/without physical dimensions): 100 / 370
+		 Real Car (with/without physical dimensions):  100 / 270 -->
+	<param name="dt" value="0.11" />
+	<arg name="T" default="100" />
+
+ 	<!-- min_delta: The minimum allowed steering angle (radians)
+    	 max_delta: The maximum allowed steering angle (radians)
+
+    	 delta_num: The number of different trajectories
+		 Simulation (with/without physical dimensions): 3 / 7
+		 Real Car (with/without physical dimensions):  3 / 9 --> 
+	<param name="min_delta" value="-0.34" />
+	<param name="max_delta" value="0.341" />
+	<arg name="traj_nums" default="3" />
+
+ 	<!-- laser_offset: How much to shorten the laser measurements 
+		 Simulation (with/without physical dimensions): 0.5 / 0.75
+		 Real Car (with/without physical dimensions):  0.2 / 0.2 --> 
+	<arg name="laser_offset" default="0.2" />
+   
+
+	<!--  --> 
+  	<node pkg="lab3" type="LaserWanderer.py" name="LaserWanderer" required="true" output="screen" > />
+		<param name="T" value="$(arg T)" />
+		<param name="traj_nums" value="$(arg traj_nums)" />
+		<param name="laser_offset" value="$(arg laser_offset)" />
+	</node>
+
+</launch>
