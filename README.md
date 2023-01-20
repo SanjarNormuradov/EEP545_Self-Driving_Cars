@@ -1,4 +1,4 @@
-## __Course: EEP545 The Self-Driving Car: Introduction to AI for Mobile Robots__
+## Course: EEP545 The Self-Driving Car: Introduction to AI for Mobile Robots
 ### Final Project: Autonomous Driving Car Race
 Mini-Projects:
 * Control: [PID](https://github.com/SanjarNormuradov/EEP545_Self-Driving_Cars/blob/main/tutorial_ws/lab3/src/LineFollower.py) | [MPC](https://github.com/SanjarNormuradov/EEP545_Self-Driving_Cars/blob/main/tutorial_ws/lab3/src/LaserWanderer.py) 
